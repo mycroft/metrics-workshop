@@ -50,8 +50,21 @@ The workshop is composed of two parts: A frontend part, built with flask, and a 
 
 To be fast, the frontend:
 - is providing an endpoint that will push messages to the MQ;
-- is providing an endpoint to read to the database;
+- is providing an endpoint to read to the database (with caching!);
 
 The backend has workers that:
 - consume the messages and write some stuff in DB;
 - will generate new messages sent to the MQ.
+
+You'll need to run backend and frontend - feel free to use multiple terms for this
+
+```sh
+$ poetry run backend/main.py
+$ poetry run frontend/main.py
+```
+
+You can now simulate random traffic.
+
+```sh
+$ poetry run traffic/main.py
+```

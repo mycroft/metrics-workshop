@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import json
 import random
 import threading
 from time import sleep
 
+from utils.cache import get_cache, get_cache_key
 from utils.consumer import MessageConsumer
 from utils.producer import MessageProducer
 from utils.random import get_random_time, get_random_quantity
@@ -40,15 +42,31 @@ class Worker(threading.Thread):
                 if message == "hello":
                     sleep(get_random_time())
                 else:
+                    # Message is likely a json with fruit & quantity
+                    # if not, we consider it as a string and use a random quantity
+                    fruit_name = 'unknown'
+                    quantity = get_random_quantity()
+
+                    if isinstance(message, dict):
+                        fruit_name = message.get('fruit', 'unknown')
+                        quantity = message.get('quantity', get_random_quantity())
+
                     # Save message to database
                     session = get_session(db)
-                    session.add(fruit.Fruit(name=message, quantity=get_random_quantity()))
+                    session.add(fruit.Fruit(name=fruit_name, quantity=quantity))
                     session.commit()
                     session.close()
 
-                sleep(random.randint(1, 50) * 0.1)
+                    # Drop cache
+                    cache = get_cache()
+                    cache_key = get_cache_key(fruit_name)
+                    cache.delete(cache_key)
+
+                # sleep(random.randint(1, 100) * 0.01)
             except TimeoutError:
                 pass
+            except Exception as e:
+                print(str(e))
 
         db.dispose()
 
@@ -76,7 +94,8 @@ class Generator(threading.Thread):
         while not self.stopped:
             try:
                 sleep(random.randint(5, 15))
-                self.producer.send_message("oranges")
+                message = {'fruit': 'oranges', 'quantity': random.randint(1, 10)}
+                self.producer.send_message(message)
             except Exception as e:
                 print(e)
 
@@ -98,10 +117,11 @@ class Engine:
 
         workers = []
 
-        for i in range(0, 5):
+        for i in range(0, 20):
             worker = Worker(i)
             workers.append(worker)
 
+        for i in range(0, 5):
             generator = Generator(i)
             workers.append(generator)
 

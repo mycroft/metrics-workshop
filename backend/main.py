@@ -62,7 +62,6 @@ class Worker(threading.Thread):
                     cache_key = get_cache_key(fruit_name)
                     cache.delete(cache_key)
 
-                # sleep(random.randint(1, 100) * 0.01)
             except TimeoutError:
                 pass
             except Exception as e:
@@ -93,7 +92,6 @@ class Generator(threading.Thread):
         print("Generator running")
         while not self.stopped:
             try:
-                sleep(random.randint(5, 15))
                 message = {'fruit': 'oranges', 'quantity': random.randint(1, 10)}
                 self.producer.send_message(message)
             except Exception as e:

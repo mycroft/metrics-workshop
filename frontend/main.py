@@ -12,9 +12,6 @@ app = Flask(__name__)
 
 @app.route('/hello', methods=['GET'])
 def hello():
-    # Adding random latency
-    sleep(random.randint(1, 100)*.01)
-
     queue = MessageProducer()
     queue.send_message('hello')
 
@@ -23,9 +20,6 @@ def hello():
 
 @app.route('/fruit', methods=['POST'])
 def fruit_post():
-    # Adding random latency
-    sleep(random.randint(1, 100)*.01)
-
     data = request.get_json()
     if not data or 'fruit' not in data or 'quantity' not in data:
         return jsonify({"error": "No fruit or quantity provided"}), 400
@@ -50,9 +44,6 @@ def fruit_post():
 
 @app.route('/fruit', methods=['GET'])
 def fruit_get():
-    # adding random latency
-    sleep(random.randint(1, 100)*.01)
-
     fruit_name = request.args.get('name')
     if not fruit_name:
         return jsonify({"error": "No fruit provided"}), 400

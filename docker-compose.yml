@@ -1,71 +1,59 @@
 services:
   postgres:
+    network_mode: host
     image: postgres:16
     container_name: postgres
     environment:
       POSTGRES_USER: demo
       POSTGRES_PASSWORD: demo
       POSTGRES_DB: demo
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - localnet
 
   rabbitmq:
+    network_mode: host
     image: rabbitmq:4.0.4
     container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15692:15692"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - localnet
 
   prometheus:
+    network_mode: host
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
       - ./contrib/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    networks:
-      - localnet
 
   grafana:
+    network_mode: host
     image: grafana/grafana:latest
     container_name: grafana
-    ports:
-      - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
-    networks:
-      - localnet
 
   node_exporter:
+    network_mode: host
     image: prom/node-exporter:latest
     container_name: node_exporter
-    ports:
-      - "9100:9100"
-    networks:
-      - localnet
 
   postgres_exporter:
+    network_mode: host
     image: prometheuscommunity/postgres-exporter:latest
     container_name: postgres_exporter
     environment:
       DATA_SOURCE_NAME: "postgresql://demo:demo@postgres:5432/demo?sslmode=disable"
-    ports:
-      - "9187:9187"
-    networks:
-      - localnet
 
+  valkey:
+    network_mode: host
+    image: valkey/valkey:latest
+    container_name: valkey
 
-networks:
-  localnet:
-    driver: bridge
+  redis_exporter:
+    network_mode: host
+    image: oliver006/redis_exporter:latest
+    container_name: redis_exporter
+    environment:
+      REDIS_ADDR: "localhost:6379"
 
 volumes:
   postgres_data:

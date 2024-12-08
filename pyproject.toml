@@ -17,6 +17,7 @@ sqlalchemy = "^2.0.36"
 psycopg2 = "^2.9.10"
 valkey = "^6.0.2"
 requests = "^2.32.3"
+prometheus-client = "^0.21.1"
 
 
 [build-system]

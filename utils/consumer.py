@@ -1,5 +1,11 @@
 import json
 from pika import ConnectionParameters, BlockingConnection
+from prometheus_client import Counter, Histogram
+from utils.latency import simulate_latency
+
+MQ_CONSUME_COUNTER = Counter("mq_consume_total", "Total number of messages consumed", ["queue"])
+MQ_CONSUME_LATENCY = Histogram("mq_consume_latency", "Time spent processing consume", ["queue"])
+MQ_ACK_LATENCY = Histogram("mq_ack_latency", "Time spent processing basic_ack", ["queue"])
 
 class MessageConsumer:
     def __init__(self):
@@ -21,15 +27,20 @@ class MessageConsumer:
         self.channel.start_consuming()
 
     def consume_one(self):
-        method, _props, body = next(
-            self.channel.consume(
-                queue="task_queue", auto_ack=False, inactivity_timeout=1
+        MQ_CONSUME_COUNTER.labels('task_queue').inc()
+        simulate_latency()
+
+        with MQ_CONSUME_LATENCY.labels('task_queue').time():
+            method, _props, body = next(
+                self.channel.consume(
+                    queue="task_queue", auto_ack=False, inactivity_timeout=1
+                )
             )
-        )
 
         if method:
             message = json.loads(body)
-            self.channel.basic_ack(method.delivery_tag)
+            with MQ_ACK_LATENCY.labels('task_queue').time():
+                self.channel.basic_ack(method.delivery_tag)
             return message
 
         return None

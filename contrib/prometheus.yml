@@ -16,6 +16,28 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
+  - job_name: 'blackbox_exporter'
+    static_configs:
+      - targets: ['localhost:9115']
+
+  - job_name: 'blackbox_http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://localhost:9090 # Prometheus
+        - http://localhost:9100 # Node exporter
+        - http://localhost:9187 # Postgres exporter
+        - http://localhost:9121 # Redis exporter
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9115
+
   - job_name: 'rabbitmq'
     static_configs:
       - targets: ['localhost:15692']

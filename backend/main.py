@@ -9,7 +9,8 @@ from utils.cache import get_cache, get_cache_key
 from utils.consumer import MessageConsumer
 from utils.producer import MessageProducer
 from utils.random import get_random_time, get_random_quantity
-from utils.db import create_schema, create_db_engine, get_session
+
+from utils.db import Database
 
 from model import model, fruit
 
@@ -29,7 +30,8 @@ class Worker(threading.Thread):
     def run(self):
         print("Worker running")
 
-        db = create_db_engine()
+        db = Database()
+        db.initialize(create_schema=True)
 
         while not self.stopped:
             try:
@@ -51,11 +53,9 @@ class Worker(threading.Thread):
                         fruit_name = message.get('fruit', 'unknown')
                         quantity = message.get('quantity', get_random_quantity())
 
-                    # Save message to database
-                    session = get_session(db)
-                    session.add(fruit.Fruit(name=fruit_name, quantity=quantity))
-                    session.commit()
-                    session.close()
+                    with db.session() as session:
+                        session.add(fruit.Fruit(name=fruit_name, quantity=quantity))
+                        session.commit()
 
                     # Drop cache
                     cache = get_cache()
@@ -94,6 +94,8 @@ class Generator(threading.Thread):
             try:
                 message = {'fruit': 'oranges', 'quantity': random.randint(1, 10)}
                 self.producer.send_message(message)
+
+                sleep(get_random_time())
             except Exception as e:
                 print(e)
 
@@ -106,11 +108,6 @@ class Generator(threading.Thread):
 
 class Engine:
     def main(self):
-        # Create schema, if not already done
-        db_engine = create_db_engine()
-        create_schema(model.get_base(), db_engine)
-        db_engine.dispose()
-
         print("Worker started")
 
         workers = []
@@ -119,7 +116,7 @@ class Engine:
             worker = Worker(i)
             workers.append(worker)
 
-        for i in range(0, 5):
+        for i in range(0, 1):
             generator = Generator(i)
             workers.append(generator)
 

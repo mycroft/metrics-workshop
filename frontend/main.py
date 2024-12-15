@@ -5,7 +5,7 @@ from time import sleep
 from flask import Flask, request, jsonify
 from model import fruit
 from utils.cache import get_cache, get_cache_key
-from utils.db import create_db_engine, get_session
+from utils.db import Database
 from utils.producer import MessageProducer
 
 app = Flask(__name__)
@@ -61,10 +61,13 @@ def fruit_get():
             app.logger.info(f"Cache miss for key {cache_key}")
     except Exception as e:
         app.logger.error(f"Error accessing cache: {str(e)}")
-    
-    session = get_session(create_db_engine())
+
+    db = Database()
+    db.initialize(create_schema=False)
+
     try:
-        total_quantity = fruit.get_total_quantity(session, fruit_name)
+        with db.session() as session:
+            total_quantity = fruit.get_total_quantity(session, fruit_name)
         total_quantity = total_quantity if total_quantity is not None else 0
 
         # save the value in cache with a 10 seconds ttl
@@ -73,8 +76,6 @@ def fruit_get():
         return jsonify({"fruit": fruit_name, "total_quantity": total_quantity})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    finally:
-        session.close()
 
     return jsonify({"message": "You requested fruits!"})
 

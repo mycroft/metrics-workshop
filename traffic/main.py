@@ -14,17 +14,18 @@ from model import fruit
 
 def run_get_hello():
     r = requests.get('http://localhost:5000/hello')
+    # print(r.text)
 
 def run_get_fruit():
     fruit_name = random.choice(fruit.get_possible_fruits())
     r = requests.get(f'http://localhost:5000/fruit?name={fruit_name}')
-    print(r.text)
+    # print(r.text)
 
 def run_post_fruit():
     fruit_name = random.choice(fruit.get_possible_fruits())
     quantity = random.randint(1, 10)
     r = requests.post('http://localhost:5000/fruit', json={"fruit": fruit_name, "quantity": quantity})
-    print(r.text)
+    # print(r.text)
 
 class TrafficWorker(threading.Thread):
     def __init__(self, worker_id):

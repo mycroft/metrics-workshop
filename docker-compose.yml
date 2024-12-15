@@ -41,7 +41,7 @@ services:
     image: prometheuscommunity/postgres-exporter:latest
     container_name: postgres_exporter
     environment:
-      DATA_SOURCE_NAME: "postgresql://demo:demo@postgres:5432/demo?sslmode=disable"
+      DATA_SOURCE_NAME: "postgresql://demo:demo@localhost:5432/demo?sslmode=disable"
 
   valkey:
     network_mode: host
@@ -54,6 +54,13 @@ services:
     container_name: redis_exporter
     environment:
       REDIS_ADDR: "localhost:6379"
+
+  blackbox_exporter:
+    network_mode: host
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox_exporter
+    volumes:
+      - ./contrib/blackbox-exporter.yml:/etc/blackbox_exporter/config.yml
 
 volumes:
   postgres_data:

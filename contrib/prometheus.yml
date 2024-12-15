@@ -32,14 +32,6 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9121']
 
-  - job_name: 'frontend'
-    static_configs:
-      - targets: ['localhost:5000']
-
-  - job_name: 'backend'
-    static_configs:
-      - targets: ['localhost:5001']
-
   - job_name: 'blackbox_exporter'
     static_configs:
       - targets: ['localhost:9115']
@@ -61,3 +53,15 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: localhost:9115
+
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['localhost:3000']
+
+  - job_name: 'frontend'
+    static_configs:
+      - targets: ['localhost:5000']
+
+  - job_name: 'backend'
+    static_configs:
+      - targets: ['localhost:5001']

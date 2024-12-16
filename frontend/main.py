@@ -44,9 +44,7 @@ def fruit_post():
 
 @app.route('/fruit', methods=['GET'])
 def fruit_get():
-    fruit_name = request.args.get('name')
-    if not fruit_name:
-        return jsonify({"error": "No fruit provided"}), 400
+    fruit_name = request.args.get('name', 'all')
     
     # check if cache has the value
     cache = get_cache()
@@ -67,7 +65,11 @@ def fruit_get():
 
     try:
         with db.session() as session:
-            total_quantity = fruit.get_total_quantity(session, fruit_name)
+            if fruit_name == 'all':
+                total_quantity = fruit.get_all_fruits(session)
+            else:
+                total_quantity = fruit.get_recent_quantity(session, fruit_name)
+
         total_quantity = total_quantity if total_quantity is not None else 0
 
         # save the value in cache with a 10 seconds ttl

@@ -260,10 +260,59 @@ In the Status -> Targets page, you should see the targets being scraped.
 
 In the Graph page, you can write queries to see the metrics. Try it yourself! You can query the metrics you've added, and you should see them in the graph:
 
+- hello_total
+  - rate(hello_total[1m])
+
 - recent_fruits
-- all_fruits
+  - count(recent_fruits)
+  - sum(recent_fruits)
+
 - http_latency
+  - sum(http_latency_count)
+  - histogram_quantile(0.5, sum(rate(http_latency_bucket[5m])) by (le))
+  - histogram_quantile(0.95, sum(rate(http_latency_bucket[5m])) by (le))
 
-You can also use the Prometheus language to run a bit more complex queries, such as:
+Other queries can be run, such as:
 
-- this part is to be done
+- count by(job) ({__name__=~".+"})
+- {job="frontend"}
+
+
+### Exercise 7: Using Grafana
+
+Grafana is reachable at `http://localhost:3000/`.
+
+You can create a new dashboard, and add panels to it. You can also add alerts to the dashboard, and you can create a new datasource to connect to Prometheus.
+
+On first login, you'll be asked to create a new password. Try admin/admin if it asks for a password.
+
+It is time to create a dashboard. with the metrics you've added so far.
+
+Some ideas:
+- A panel with the total number of fruits inserted in the database;
+- A panel with the total number of fruits inserted in the database, split by fruit;
+- A panel with the latency of the `/hello` and `/fruit` endpoints;
+- A panel with the number of requests to the `/hello` and `/fruit` endpoints;
+
+It works the same way as the Prometheus UI, you can write queries:
+- Click on the "Explore" button;
+- Write a query to get the total number of fruits inserted in the database;
+
+If you're ready, now is the time to create a dashboard.
+- Click on the "Dashboards" button in the menu;
+- Click on "New" then "New Dashboard" to create a new dashboard;
+- Add a visualisation panel, select the Prometheus datasource, and write a query (ex: `sum(recent_fruits)`);
+- You can add other queries in the same panel. Try it yourself by adding the query `recent_fruits{fruit="banana"}`;
+- It is possible to tweak the label, the panel settings (min/max, colors, legends, etc.);
+
+
+### Exercise 8: Grafana opensource dashboards
+
+There is quite a lot of opensource dashboards available, and you can find a lot of them on [Grafana Labs's website](https://grafana.com/grafana/dashboards/).
+
+Try to import one, and see how it looks like. We're running RabbitMQ, Postgres, Redis and Prometheus, so you can find a lot of dashboards that will help you understand how everything works together.
+
+
+### Exercice 9: Alerting
+
+This part is yet to be done.

@@ -35,16 +35,19 @@ class TrafficWorker(threading.Thread):
 
     def run(self):
         while not self.stopped:
-            # Simulate a request to the frontend service, choosing between GET /hello, GET /fruit, POST /fruit
-            request_type = random.choice(["GET /hello", "GET /fruit", "POST /fruit"])
-            if request_type == "GET /hello":
-                run_get_hello()
-            elif request_type == "GET /fruit":
-                run_get_fruit()
-            elif request_type == "POST /fruit":
-                run_post_fruit()
-            
-            sleep(random.randint(1, 5)*.1)
+            try:
+                # Simulate a request to the frontend service, choosing between GET /hello, GET /fruit, POST /fruit
+                request_type = random.choice(["GET /hello", "GET /fruit", "POST /fruit"])
+                if request_type == "GET /hello":
+                    run_get_hello()
+                elif request_type == "GET /fruit":
+                    run_get_fruit()
+                elif request_type == "POST /fruit":
+                    run_post_fruit()
+
+                sleep(random.randint(1, 5)*.1)
+            except Exception as e:
+                sleep(5)
 
     def stop(self):
         self.stopped = True

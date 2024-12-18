@@ -286,6 +286,8 @@ You can create a new dashboard, and add panels to it. You can also add alerts to
 
 On first login, you'll be asked to create a new password. Try admin/admin if it asks for a password.
 
+You'll need to connect Grafana with Prometheus. Add a Connection (Connections/Data sources), add a Prometheus datasource that targets `http://localhost:9090/`.
+
 It is time to create a dashboard. with the metrics you've added so far.
 
 Some ideas:

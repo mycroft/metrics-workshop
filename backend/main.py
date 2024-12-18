@@ -31,7 +31,7 @@ class Worker(threading.Thread):
         print("Worker running")
 
         db = Database()
-        db.initialize(create_schema=True)
+        db.initialize(create_schema=False)
 
         while not self.stopped:
             try:
@@ -138,6 +138,10 @@ class Engine:
         return "Engine"
 
 def start():
+    # Create the database, if required.
+    db = Database()
+    db.initialize(create_schema=True)
+
     app = Engine()
     app.main()
 

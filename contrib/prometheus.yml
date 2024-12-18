@@ -42,7 +42,7 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-       - http://localhost:9090 # Prometheus
+        - http://localhost:9090 # Prometheus
         - http://localhost:9100 # Node exporter
         - http://localhost:9187 # Postgres exporter
         - http://localhost:9121 # Redis exporter

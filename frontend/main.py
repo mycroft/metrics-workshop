@@ -8,10 +8,28 @@ from utils.cache import get_cache, get_cache_key
 from utils.db import Database
 from utils.producer import MessageProducer
 
+from prometheus_client import make_wsgi_app, Counter, Gauge, Histogram
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+
 app = Flask(__name__)
+# Add prometheus wsgi middleware to route /metrics requests
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
+    '/metrics': make_wsgi_app()
+})
+
+HELLO_COUNTER = Counter('hello_total', 'Total number of hello requests')
+ALL_FRUITS_GAUGE = Gauge('all_fruits', 'Total number of recent fruits in the database')
+RECENT_FRUITS_GAUGE = Gauge('recent_fruits', 'Total number of recent fruits in the database', ['fruit'])
+HTTP_LATENCY_HISTOGRAM = Histogram('http_latency', 'Histogram of HTTP latencies', ['method', 'endpoint'])
 
 @app.route('/hello', methods=['GET'])
+@HTTP_LATENCY_HISTOGRAM.labels('GET', '/hello').time()
 def hello():
+    HELLO_COUNTER.inc()
+
+    sleep(random.randint(1, 5) * 0.1)
+
+
     queue = MessageProducer()
     queue.send_message('hello')
 
@@ -19,6 +37,7 @@ def hello():
 
 
 @app.route('/fruit', methods=['POST'])
+@HTTP_LATENCY_HISTOGRAM.labels('POST', '/fruit').time()
 def fruit_post():
     data = request.get_json()
     if not data or 'fruit' not in data or 'quantity' not in data:
@@ -43,6 +62,7 @@ def fruit_post():
 
 
 @app.route('/fruit', methods=['GET'])
+@HTTP_LATENCY_HISTOGRAM.labels('GET', '/fruit').time()
 def fruit_get():
     fruit_name = request.args.get('name', 'all')
     
@@ -67,8 +87,10 @@ def fruit_get():
         with db.session() as session:
             if fruit_name == 'all':
                 total_quantity = fruit.get_all_fruits(session)
+                ALL_FRUITS_GAUGE.set(total_quantity)
             else:
                 total_quantity = fruit.get_recent_quantity(session, fruit_name)
+                RECENT_FRUITS_GAUGE.labels(fruit_name).set(total_quantity)
 
         total_quantity = total_quantity if total_quantity is not None else 0
 

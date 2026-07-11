@@ -5,6 +5,8 @@ import random
 import threading
 from time import sleep
 
+from prometheus_client import start_http_server
+
 from utils.cache import get_cache, get_cache_key
 from utils.consumer import MessageConsumer
 from utils.producer import MessageProducer
@@ -141,6 +143,9 @@ def start():
     # Create the database, if required.
     db = Database()
     db.initialize(create_schema=True)
+
+    start_http_server(5001)
+
 
     app = Engine()
     app.main()
